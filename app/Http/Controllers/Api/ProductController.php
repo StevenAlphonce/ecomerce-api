@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -32,9 +33,15 @@ class ProductController extends Controller
 
         $data['slug'] = Str::slug($data['name']);
 
+        $image_path = '';
+
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $image = $request->file('image');
+            $image_name = Str::slug($request->image . '-' . time() . '-' . $image->getClientOriginalExtension());
+            $image_path = $image->storeAs('product', $image_name, 'public');
         }
+
+        $data['image'] = $image_path;
 
         Product::create($data);
 
@@ -74,6 +81,18 @@ class ProductController extends Controller
         $data = $request->validated();
 
         $data['slug'] = Str::slug($data['name']);
+
+
+        if ($request->hasFile('image')) {
+
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $image = $request->file('image');
+            $image_name = Str::slug($request->image . '-' . time() . '-' . $image->getClientOriginalExtension());
+            $data['image'] = $image->storeAs('product', $image_name, 'public');
+        }
 
         $product->update($data);
 

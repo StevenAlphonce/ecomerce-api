@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CategoryRequest;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -30,11 +31,15 @@ class CategoryController extends Controller
 
         $data = $request->validated();
 
-        $data['name'] = $request->name;
         $data['slug'] = Str::slug($request->name);
-        $data['description'] = $request->description;
 
-        Category::save($data);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $image_name = Str::slug($request->image . '-' . time() . '-', $image->getClientOriginalExtension());
+            $data['image'] = $image->storeAs('category', $image_name, 'public');
+        }
+
+        Category::create($data);
 
         return response()->json([
             'status' => 'Success',
@@ -70,9 +75,17 @@ class CategoryController extends Controller
 
         $data = $request->validated();
 
-        $data['name'] = $request->name;
         $data['slug'] = Str::slug($request->name);
-        $data['description'] = $request->description;
+
+        if ($request->hasFile('image')) {
+
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $image = $request->file('image');
+            $image_name = Str::slug($request->image . '-' . time() . '-', $image->getClientOriginalExtension());
+            $data['image'] = $image->storeAs('category', $image_name, 'public');
+        }
 
         $category->update($data);
 
