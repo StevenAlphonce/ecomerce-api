@@ -16,9 +16,13 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('categories', CategoryController::class);
-
-    Route::post('logout', [AuthController::class, 'logout']);
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->except('index');
 });
+
+
+Route::apiResource('products', ProductController::class)->only(['index', 'show']);
+Route::apiResource('categories', CategoryController::class)->only('index');
+
+Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth:sanctum');
