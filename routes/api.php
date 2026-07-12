@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
@@ -21,6 +23,11 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::apiResource('categories', CategoryController::class)->except('index');
 });
 
+//User Addresses
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('address', AddressController::class);
+    Route::apiResource('cart', CartController::class)->only(['index', 'store', 'update', 'destroy']);
+});
 
 Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 Route::apiResource('categories', CategoryController::class)->only('index');
